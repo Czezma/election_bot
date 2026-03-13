@@ -67,7 +67,7 @@ async def election(interaction: discord.Interaction,
         limit=limit)
     
     if not result:
-        result = "No results found. Fuck you."
+        result = "No results found."
     
     # Send the formatted result back to Discord
     await interaction.followup.send(result)
