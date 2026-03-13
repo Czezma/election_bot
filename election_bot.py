@@ -3,9 +3,10 @@ import logging
 import json
 import requests
 import os
+import io
 from dotenv import load_dotenv
 from discord import app_commands
-from civic_api import search_elections
+from civic_api import search_elections, get_race_map
 
 # Retrieve bot token from .env
 load_dotenv()
@@ -57,7 +58,7 @@ async def election(interaction: discord.Interaction,
     await interaction.response.defer()
 
     # Call the civic_api.py function with whatever the user provided
-    result = search_elections(start_date=start_date,
+    result, data = search_elections(start_date=start_date,
         end_date=end_date,
         query=query,
         country=country,
@@ -71,6 +72,14 @@ async def election(interaction: discord.Interaction,
     
     # Send the formatted result back to Discord
     await interaction.followup.send(result)
+
+    # Send a map image for each race that has one
+    for race in data["races"]:
+        if race["has_map"]:
+            image_bytes = get_race_map(race["id"])
+            file = discord.File(io.BytesIO(image_bytes), filename="map.png")
+            # Send the race name as a label, then the map right after
+            await interaction.followup.send(content=f"***{race['election_name']}***", file=file)
 
 # Initialize retrieved bot token into variable
 token = os.getenv("DISCORD_TOKEN")

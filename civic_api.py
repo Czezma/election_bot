@@ -35,7 +35,7 @@ def search_elections(start_date=None, end_date=None, query=None, country=None, p
     # Format the data into a readable string and return it
     formatted = format_elections(data)
 
-    return formatted
+    return formatted, data
 
 
 def format_elections(data):
@@ -59,3 +59,11 @@ def format_elections(data):
                 output += "     " + candidate["name"] + "  " + f"{candidate['votes']:,}" + " votes  " + str(candidate["percent"]) + "%\n\n"
 
     return output
+
+def get_race_map(race_id):
+    # Fetch the map image for a given race ID
+    url = f"https://civicapi.org/api/v2/race/{race_id}?generateMapPNG"
+    response = requests.get(url)
+    print(f"Map response for race {race_id}: {response.status_code}")
+    print(f"Content: {response.content}")
+    return response.content # returns raw image bytes
