@@ -1,0 +1,4 @@
+.env
+__pycache__/
+bot-env/
+errors_and_debug.log
