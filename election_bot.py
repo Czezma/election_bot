@@ -6,7 +6,17 @@ import os
 import io
 from dotenv import load_dotenv
 from discord import app_commands
+from discord.ext import tasks
+from itertools
 from civic_api import search_elections, get_race_map
+
+# For Discord rich presence
+activities = [
+    discord.Activity(type=discord.ActivityType.watching, name="the polls"),
+    discord.Activity(type=discord.ActivityType.listening, name="to voters"),
+    discord.Game(name="electoral college"),
+    discord.Activity(type=discord.ActivityType.competing, name="the 2026 midterms"),
+]
 
 # Retrieve bot token from .env
 load_dotenv()
@@ -24,12 +34,22 @@ client = discord.Client(intents=intents)
 # CommandTree is what registers and handles slash commands
 tree = app_commands.CommandTree(client)
 
+# Loops through each rich presence every 30 seconds, cosmetic
+@tasks.loop(seconds=30)
+async def rotate_status():
+    await client.change_presence(activity=next(activity_cycle))
+
 # Called when the bot finishes logging in and setting up
 @client.event
 async def on_ready():
     # Syncs slash commands with Discord so they show up
     await tree.sync()
     print(f'Logged in as {client.user}')
+
+    # Begins the rotation of the different rich presences
+    global activity_cycle
+    activity_cycle = itertools.cycle(activities)
+    rotate_status.start()
 
 # Register the /election slash command
 @tree.command(name="election", description="Search for an election")
